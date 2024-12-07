@@ -1,7 +1,7 @@
 const appRoot = require("app-root-path");
 const fs = require("fs");
 const { voters } = require(`${appRoot}/voterRegistry.json`);
-const { saveToFile } = require("./saveToFile.js");
+const { download } = require("./saveToFile.js");
 
 function generateVoterMapping() {
     let voterMapping = {};
@@ -10,7 +10,7 @@ function generateVoterMapping() {
         voterMapping[voters[i]] = i;
     }
 
-    saveToFile(voterMapping, "voterMapping");
+    download(voterMapping, "voterMapping");
 }
 
 generateVoterMapping();

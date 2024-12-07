@@ -1,7 +1,7 @@
 const appRoot = require("app-root-path");
 const fs = require("fs");
 
-async function saveToFile(data, filename) {
+async function download(data, filename) {
     const jsonObj = JSON.stringify(data, null, 2); // Pretty-printed JSON for readability
 
     try {
@@ -12,4 +12,4 @@ async function saveToFile(data, filename) {
     }
 }
 
-module.exports = { saveToFile };
+module.exports = { download };

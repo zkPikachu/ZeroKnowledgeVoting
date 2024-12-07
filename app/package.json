@@ -5,7 +5,8 @@
     "main": "",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "init-poll": "node ./src/generateVoterMapping.js && node ./src/normalizeVoter.js && node ./src/resetResults.js && node ./src/generateVotingID.js"
+        "init-poll": "node ./src/generateVoterMapping.js && node ./src/normalizeVoter.js && node ./src/resetResults.js && node ./src/generateVotingID.js",
+        "vote": "node ./src/getTicketAndVote.js"
     },
     "author": "zkPickachu",
     "license": "MIT",

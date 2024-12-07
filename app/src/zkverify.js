@@ -6,7 +6,7 @@ const circomlibjs = require("circomlibjs");
 const yargs = require("yargs/yargs");
 const { hideBin } = require('yargs/helpers');
 require('dotenv').config({ path: ['.env', '.env.secrets'] });
-const voter = require(`../voter.json`);
+const voter = require(`../voterMapping.json`);
 const merkle = require("./merkleTree.js");
 const circomlib = require("circomlib");
 const prompt = require('prompt-sync')(); 

@@ -1,118 +1,132 @@
 /**
  * @typedef {Object} MerkleTree
- * @property {Array<any>} leaves The input leaves of the tree.
- * @property {Array<any>} nodes All nodes in the Merkle tree, including leaves and internal nodes.
- * @property {number} depth The depth of the Merkle tree.
- * @property {any} root The root hash of the Merkle tree.
+ * @property {Array<any>} inputs Leaves of the tree. Type depends on hash function.
+ * @property {Array<any>} nodes Nodes of the Merkle tree. Type depends on hash function.
+ * @property {Number} depth Depth of the Merkle tree.
+ * @property {{readonly root: *}} root Root of the Merkle tree.
  */
 
 /**
- * Creates a Merkle tree from the given leaves and hash functions.
- * @param {Array<any>} leaves Input leaves for the Merkle tree.
- * @param {Function} hashLeaf Hash function for individual leaves.
- * @param {Function} hashNode Hash function for combining two child nodes.
- * @returns {MerkleTree} A Merkle tree object with utilities.
+ * Creates a Merkle tree object from the given input, which can create and validate Merkle proofs.
+ * @param {Array<any>} input Leaves of the Merkle Tree
+ * @param {Function} leafHash Takes one input (leaf) and hashes it
+ * @param {Function} nodeHash Takes two inputs (left and right nodes) and hashes them
+ * @returns {MerkleTree} A Merkle tree with functionalities
  */
-async function createMerkleTree(leaves, hashLeaf, hashNode) {
+async function merkleTree(input, leafHash, nodeHash) {
+    const merkle = {
+        inputs: [...input], // Deep copy of input array
+        leafHash,
+        nodeHash,
+        depth: Math.log2(input.length),
+        nodes: []
+    };
+
     /**
-     * Calculates all nodes of the Merkle tree.
-     * @returns {Array<any>} All nodes in the Merkle tree.
+     * Calculate all nodes of the Merkle tree.
+     * This implementation uses a level-based approach to reduce recalculations and memory usage.
      */
-    function calculateAllNodes() {
-        const allNodes = [];
+    function calculateNodes() {
+        const levels = []; // Stores the levels of the Merkle tree
+        let currentLevel = merkle.inputs.map(merkle.leafHash); // Start with hashed leaves
+        levels.push(currentLevel);
 
-        // Hash all leaves first
-        for (const leaf of merkleTree.leaves) {
-            allNodes.push(merkleTree.hashLeaf(leaf));
-        }
-
-        let currentLevelSize = allNodes.length;
-        let offset = 0;
-
-        // Compute hashes for all tree levels
-        while (currentLevelSize > 1) {
-            for (let i = 0; i < currentLevelSize; i += 2) {
-                const left = allNodes[offset + i];
-                const right = allNodes[offset + i + 1];
-                allNodes.push(merkleTree.hashNode(left, right));
+        while (currentLevel.length > 1) {
+            const nextLevel = [];
+            for (let i = 0; i < currentLevel.length; i += 2) {
+                const left = currentLevel[i];
+                const right = currentLevel[i + 1] || left; // Handle odd numbers of nodes
+                nextLevel.push(merkle.nodeHash(left, right));
             }
-            offset += currentLevelSize;
-            currentLevelSize = Math.floor(currentLevelSize / 2);
+            levels.push(nextLevel);
+            currentLevel = nextLevel;
         }
 
-        return allNodes;
+        // Flatten all levels into the `nodes` array
+        return levels.flat();
+    }
+
+    /**
+     * Get the root of the Merkle tree.
+     * @returns {*} The root node of the tree.
+     */
+    function getRoot() {
+        return merkle.nodes[merkle.nodes.length - 1];
     }
 
     /**
      * @typedef {Object} MerkleProof
-     * @property {Array<number>} directionBits 0 for left, 1 for right.
-     * @property {Array<any>} siblingHashes Hashes required for proof verification.
-     * @property {Function} calculateRoot Recomputes the root for verification.
+     * @property {Array<Number>} circompath Path indicating whether each node is left (0) or right (1)
+     * @property {Array<any>} lemma Array of hashes required to verify the proof
+     * @property {Function} calculateRoot Recalculates the Merkle root for validation
      */
 
     /**
-     * Generates a Merkle proof for a specific leaf.
-     * @param {number} leafIndex Index of the leaf for which to generate the proof.
-     * @returns {MerkleProof} The Merkle proof for the given leaf.
+     * Creates a Merkle proof from the tree.
+     * @param {number} index Index of the leaf in the tree
+     * @returns {MerkleProof} Merkle proof object
      */
-    function generateProof(leafIndex) {
-        if (leafIndex < 0 || leafIndex >= merkleTree.leaves.length) {
-            throw new Error("Leaf index out of bounds");
+    function getMerkleProof(index) {
+        if (index < 0 || index >= merkle.inputs.length) {
+            throw new Error("Index out of bounds");
         }
 
-        const directionBits = [];
-        const siblingHashes = [];
-        let currentIndex = leafIndex;
+        const path = [];
+        const lemma = [];
+        let currentIndex = index;
+        let width = merkle.inputs.length;
         let offset = 0;
-        let currentLevelSize = merkleTree.leaves.length;
 
-        siblingHashes.push(merkleTree.nodes[currentIndex]); // Add leaf hash
+        // Add the leaf hash to the lemma
+        lemma.push(merkle.nodes[currentIndex]);
 
-        // Traverse the tree to collect proof
-        for (let i = 0; i < merkleTree.depth; i++) {
+        // Traverse up the tree to construct the proof
+        while (width > 1) {
             const isLeft = currentIndex % 2 === 0;
             const siblingIndex = isLeft ? currentIndex + 1 : currentIndex - 1;
 
-            directionBits.push(isLeft ? 0 : 1); // Add direction (0: left, 1: right)
-            siblingHashes.push(merkleTree.nodes[offset + siblingIndex]); // Add sibling hash
+            path.push(isLeft ? 0 : 1);
+            lemma.push(merkle.nodes[offset + siblingIndex]);
 
-            currentIndex = Math.floor(currentIndex / 2); // Move to parent node
-            offset += currentLevelSize;
-            currentLevelSize = Math.floor(currentLevelSize / 2);
+            currentIndex = Math.floor(currentIndex / 2);
+            offset += width;
+            width = Math.ceil(width / 2); // Account for odd-width levels
         }
 
-        siblingHashes.push(merkleTree.root); // Add root hash
+        // Add the root to the lemma
+        lemma.push(getRoot());
 
         return {
-            directionBits,
-            siblingHashes,
+            path,
+            lemma,
             calculateRoot() {
-                let hash = siblingHashes[0]; // Start with leaf hash
-                for (let i = 0; i < directionBits.length; i++) {
-                    hash = directionBits[i] === 0
-                        ? merkleTree.hashNode(hash, siblingHashes[i + 1]) // Right sibling
-                        : merkleTree.hashNode(siblingHashes[i + 1], hash); // Left sibling
-                }
-                return hash;
+                return path.reduce((hash, direction, i) => {
+                    const sibling = lemma[i + 1];
+                    return direction === 0
+                        ? merkle.nodeHash(hash, sibling)
+                        : merkle.nodeHash(sibling, hash);
+                }, lemma[0]); // Start with the leaf hash
             },
+            circompath: path
         };
     }
 
-    const merkleTree = {
-        leaves: [...leaves], // Create a deep copy of the leaves
-        hashLeaf,
-        hashNode,
-        depth: Math.log2(leaves.length),
-        get root() {
-            return this.nodes[this.nodes.length - 1];
-        },
-        generateProof,
-    };
+    // Define a getter for the root property
+    Object.defineProperty(merkle, 'root', {
+        get() {
+            return getRoot();
+        }
+    });
 
-    // Calculate all nodes
-    merkleTree.nodes = calculateAllNodes();
+    // Initialize nodes by calculating them
+    merkle.nodes = calculateNodes();
 
-    return merkleTree;
+    // Attach methods to the Merkle tree
+    merkle.calculateNodes = calculateNodes;
+    merkle.getRoot = getRoot;
+    merkle.getMerkleProof = getMerkleProof;
+
+    return merkle;
 }
 
-module.exports = { createMerkleTree };
+module.exports = { merkleTree };

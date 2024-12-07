@@ -1,7 +1,9 @@
 const { groth16 } = require("snarkjs");
 const circomlibjs = require("circomlibjs");
 const appRoot = require('app-root-path');
-
+const voter = require(`${appRoot}/voterMapping.json`);
+const { initiatePoll } = require("./initiatePoll.js");
+const { registerVoter } = require("./registerVoter.js");
 
 async function generateProof(addr, vote) {
 
@@ -54,11 +56,11 @@ async function generateProof(addr, vote) {
   // Generate ZK-SNARK Proof
   const { proof, publicSignals } = await groth16.fullProve(
     {
-      votingID: BigInt(root),
-      index: BigInt(voterIndex),
-      lemma: lemma,
-      nullifier: nullifier,
-      vote: voteBigInt,
+      merkleRoot: BigInt(root),
+      voterIndex: BigInt(voterIndex),
+      authPath: lemma,
+      nullifierHash: nullifier,
+      voteChoice: voteBigInt,
       randomness: r,
       voteCommitment: BigInt(voteCommitment)
     },

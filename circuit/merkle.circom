@@ -4,18 +4,18 @@ include "../node_modules/circomlib/circuits/poseidon.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 
 template PoseidonHash() {
-    signal input left;
-    signal input right;
+    signal input input0;
+    signal input input1;
     signal output hashedValue;
 
     component hasher = Poseidon(2);
-    hasher.inputs[0] <== left;
-    hasher.inputs[1] <== right;
+    hasher.inputs[0] <== input0;
+    hasher.inputs[1] <== input1;
     hashedValue <== hasher.out;
 }
 
 template ConditionalSelector() {
-    signal input selector; // 0 or 1
+    signal input selector; // Should be 0 or 1
     signal input input0;
     signal input input1;
     signal output selectedValue;
@@ -23,49 +23,57 @@ template ConditionalSelector() {
     // Ensure selector is boolean
     selector * (selector - 1) === 0;
 
-    // Use a linearized form:
-    // selectedValue = input0 + selector * (input1 - input0)
-    signal diff;
-    diff <== input1 - input0;
-    selectedValue <== input0 + diff * selector;
+    // Enforce out = selector ? input1 : input0
+    signal sel_in1;
+    signal one_minus_sel;
+    signal one_minus_sel_in0;
+
+    one_minus_sel <== 1 - selector;
+    sel_in1 <== selector * input1;
+    one_minus_sel_in0 <== one_minus_sel * input0;
+    selectedValue <== sel_in1 + one_minus_sel_in0;
 }
 
-
 template MerkleProof(treeDepth) {
-    signal input index;                   // Leaf index
-    signal input authPath[treeDepth + 1]; // [leafHash, ... , root]
+    signal input voterIndex;                      // Leaf index
+    signal input authPath[treeDepth + 2];         // [Leaf, authentication path elements..., Root]
 
-    component indexToBits = Num2Bits(treeDepth);
-    indexToBits.in <== index;
+    component indexBits = Num2Bits(treeDepth);    // Convert index to path bits
+    indexBits.in <== voterIndex;
 
-    signal intermediateHashes[treeDepth + 1]; 
-    intermediateHashes[0] <== authPath[0]; // Leaf hash
+    // Ensure bits are computed before use and are boolean
+    for (var i = 0; i < treeDepth; i++) {
+        indexBits.out[i] * (indexBits.out[i] - 1) === 0;
+    }
 
-    component hashers[treeDepth];
-    component leftSelectors[treeDepth];
-    component rightSelectors[treeDepth];
+    signal hash_chain[treeDepth + 1];             // Array to store hashes at each level
+    hash_chain[0] <== authPath[0];                // Start with the leaf
+
+    component hashers[treeDepth];                 // Pre-allocate all hashers
+    component muxLeft[treeDepth];
+    component muxRight[treeDepth];
 
     for (var i = 0; i < treeDepth; i++) {
         hashers[i] = PoseidonHash();
 
-        leftSelectors[i] = ConditionalSelector();
-        rightSelectors[i] = ConditionalSelector();
+        // Left input
+        muxLeft[i] = ConditionalSelector();
+        muxLeft[i].selector <== indexBits.out[i];
+        muxLeft[i].input0 <== hash_chain[i];
+        muxLeft[i].input1 <== authPath[i + 1];
+        hashers[i].input0 <== muxLeft[i].selectedValue;
 
-        // Set left input for hasher
-        leftSelectors[i].selector <== indexToBits.out[i];
-        leftSelectors[i].input0 <== intermediateHashes[i];
-        leftSelectors[i].input1 <== authPath[i + 1];
-        hashers[i].left <== leftSelectors[i].selectedValue;
+        // Right input
+        muxRight[i] = ConditionalSelector();
+        muxRight[i].selector <== indexBits.out[i];
+        muxRight[i].input0 <== authPath[i + 1];
+        muxRight[i].input1 <== hash_chain[i];
+        hashers[i].input1 <== muxRight[i].selectedValue;
 
-        // Set right input for hasher
-        rightSelectors[i].selector <== indexToBits.out[i];
-        rightSelectors[i].input0 <== authPath[i + 1];
-        rightSelectors[i].input1 <== intermediateHashes[i];
-        hashers[i].right <== rightSelectors[i].selectedValue;
-
-        intermediateHashes[i + 1] <== hashers[i].hashedValue;
+        // Store the new hash in the chain
+        hash_chain[i + 1] <== hashers[i].hashedValue;
     }
 
-    // The final computed root must match the provided root in authPath
-    intermediateHashes[treeDepth] === authPath[treeDepth];
+    // Ensure the computed root matches the provided root
+    hash_chain[treeDepth] === authPath[treeDepth + 1];
 }

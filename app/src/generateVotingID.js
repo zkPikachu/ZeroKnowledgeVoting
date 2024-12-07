@@ -1,7 +1,7 @@
 const circomlibjs = require("circomlibjs");
 const appRoot = require("app-root-path");
 const { voters } = require(`${appRoot}/voterRegistry.json`);
-const { createMerkleTree } = require("./merkleTree");
+const { merkleTree } = require("./merkleTree.js");
 const fs = require("fs");
 const resultsFilePath = `${appRoot}/votingResults.json`;
 
@@ -20,15 +20,15 @@ async function generateVotingID() {
         );
 
         // Generate the Merkle tree
-        const merkleTree = await createMerkleTree(leaves, hashLeaf, hashNode);
-        const merkleRoot = poseidon.F.toString(merkleTree.root);
+        const merkleTreeInstance = await merkleTree(leaves, hashLeaf, hashNode);
+        const merkleRoot = poseidon.F.toString(merkleTreeInstance.root);        
         console.log("Merkle Tree Root (Voting ID):", merkleRoot);
 
         // Update the results JSON with the generated voting ID
         const results = JSON.parse(fs.readFileSync(resultsFilePath, "utf8"));
         results.votingID = merkleRoot;
         fs.writeFileSync(resultsFilePath, JSON.stringify(results, null, 2), "utf8");
-        console.log("Voting ID saved to result.json");
+        console.log("Voting ID saved to votingResults.json");
 
         return merkleTree;
     } catch (error) {

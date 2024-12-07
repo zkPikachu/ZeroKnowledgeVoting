@@ -2,6 +2,8 @@ const { generateProof } = require('./generateProof.js');
 const { verify } = require('./zkverify.js');
 const appRoot = require('app-root-path');
 const prompt = require('prompt-sync')();
+const { download } = require('./saveToFile.js');
+const result = require(`${appRoot}/votingResults.json`);
 
 async function main() {
   try {
@@ -55,7 +57,7 @@ async function main() {
     result["spentTickets"][nullifier] = 1; // Mark this ticket as spent
 
     // Save updated results
-    await download(result, "result");
+    await download(result, "votingResults");
     console.log("Vote casted and results updated successfully!");
 
   } catch (error) {
