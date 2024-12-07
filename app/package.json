@@ -2,11 +2,12 @@
     "name": "zeroknowledgevoting",
     "version": "1.0.0",
     "description": "A secure voting app using zero-knowledge proofs and Merkle trees for privacy and verifiability.",
-    "main": "",
+    "main": "server.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "init-poll": "node ./src/generateVoterMapping.js && node ./src/normalizeVoter.js && node ./src/resetResults.js && node ./src/generateVotingID.js",
-        "vote": "node ./src/getTicketAndVote.js"
+        "vote": "node ./src/getTicketAndVote.js",
+        "start": "node ./src/server.js"
     },
     "author": "zkPickachu",
     "license": "MIT",
