@@ -13,12 +13,12 @@
         "big-integer": "^1.6.52",
         "body-parser": "^1.20.2",
         "circomlib": "^2.0.5",
-        "circomlibjs": "^0.0.8",
+        "circomlibjs": "^0.1.7",
         "dotenv": "^16.4.5",
         "ethers": "^6.13.4",
         "express": "^4.18.2",
         "prompt-sync": "^4.2.0",
-        "snarkjs": "^0.6.10",
+        "snarkjs": "^0.6.11",
         "yargs": "^17.7.2",
         "zkverifyjs": "^0.3.1"
     }
