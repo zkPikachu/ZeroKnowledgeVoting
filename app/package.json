@@ -1,0 +1,25 @@
+{
+    "name": "zeroknowledgevoting",
+    "version": "1.0.0",
+    "description": "A secure voting app using zero-knowledge proofs and Merkle trees for privacy and verifiability.",
+    "main": "",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "zkPickachu",
+    "license": "MIT",
+    "dependencies": {
+        "app-root-path": "^3.1.0",
+        "big-integer": "^1.6.52",
+        "body-parser": "^1.20.2",
+        "circomlib": "^2.0.5",
+        "circomlibjs": "^0.0.8",
+        "dotenv": "^16.4.5",
+        "ethers": "^6.13.4",
+        "express": "^4.18.2",
+        "prompt-sync": "^4.2.0",
+        "snarkjs": "^0.6.10",
+        "yargs": "^17.7.2",
+        "zkverifyjs": "^0.3.1"
+    }
+}
