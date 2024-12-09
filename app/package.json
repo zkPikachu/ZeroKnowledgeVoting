@@ -7,7 +7,8 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "init-poll": "node ./src/generateVoterMapping.js && node ./src/normalizeVoter.js && node ./src/resetResults.js && node ./src/generateVotingID.js",
         "vote": "node ./src/getTicketAndVote.js",
-        "start": "node ./src/server.js"
+        "start": "node ./src/server.js",
+        "dev": "nodemon ./src/server.js"
     },
     "author": "zkPickachu",
     "license": "MIT",
@@ -24,5 +25,8 @@
         "snarkjs": "^0.6.11",
         "yargs": "^17.7.2",
         "zkverifyjs": "^0.3.1"
+    },
+    "devDependencies": {
+        "nodemon": "^3.1.7"
     }
 }
