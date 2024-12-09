@@ -107,12 +107,7 @@ async function verify(proof, publicSignals) {
         "function proveVoteWasCast(uint256 attestationId, uint256 root, uint256 nullifier, bytes32[] calldata merklePath, uint256 leafCount, uint256 index, uint256 voteCommitment)",
         "event SuccessfulProofSubmission(address indexed from, uint256 voteCommitment)"
     ];
-
-    // const abiAppContract = [
-    //   "function proveVoteWasCast(uint256 attestationId, bytes32[] calldata merklePath, uint256 leafCount, uint256 index)",
-    //   "event SuccessfulProofSubmission(address indexed from)",
-    //];
-
+    
     const zkvContract = new ethers.Contract(ETH_ZKVERIFY_CONTRACT_ADDRESS, abiZkvContract, provider);
     const appContract = new ethers.Contract(ETH_APP_CONTRACT_ADDRESS, abiAppContract, wallet);
 

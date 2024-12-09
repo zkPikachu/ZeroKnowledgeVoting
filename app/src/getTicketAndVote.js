@@ -39,12 +39,7 @@ async function main() {
     if (result.votingID !== votingID) {
       throw new Error("Mismatched votingID. Voting session integrity compromised.");
     }
-
-    // // Check if this ticket (nullifier) is already spent
-    // if (result["spentTickets"][nullifier] === 1) {
-    //   throw new Error("Ticket already spent. Vote not recorded.");
-    // }
-
+    
     // Verify the proof
     const isValid = await verify(proof, publicSignals);
     if (!isValid) {
