@@ -270,12 +270,7 @@ votingApp.post("/vote", async (req, res) => {
         if (result.votingID !== votingID) {
             throw new Error("Mismatched votingID. Voting session integrity compromised.");
         }
-
-        // Check if the Ticket (Nullifier) is Already Spent
-        if (result["spentTickets"][nullifier] === 1) {
-            throw new Error("Ticket already spent. Vote not recorded.");
-        }
-
+        
         // Verify the Proof
         const isValid = await verify(proof, publicSignals);
         if (!isValid) {
@@ -303,10 +298,16 @@ votingApp.post("/vote", async (req, res) => {
             </div>
         `);
     } catch (error) {
+        let errorMessage = error.message;
+
+        if (errorMessage.includes("Nullifier already used")) {
+            errorMessage = "Ticket already spent. Vote not recorded.";
+        }
+
         // Send Error Response to the Client
         res.send(`
           <div style="background-color: #fff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border-radius: 10px; padding: 20px; max-width: 400px; width: 100%;">
-              <h1 style="font-size: 1.8rem; margin-bottom: 20px; color: #dc3545;">Error: ${error.message}</h1>
+              <h1 style="font-size: 1.8rem; margin-bottom: 20px; color: #dc3545;">Error: ${errorMessage}</h1>
               <a  style="background-color: #007bff; color: #fff; padding: 10px 15px; border: none; border-radius: 5px; font-size: 1rem; cursor: pointer; width: 100%;" href="http://localhost:3000">Return to Voting Page</a>
           </div>
         `);
