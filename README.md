@@ -20,13 +20,38 @@ ZeroKnowledgeVoting is a demo application showcasing a zero-knowledge voting sys
    ```bash
    cd ZeroKnowledgeVoting
    ```
+3. Move to the `contracts`folder:   
 
-3. Move to the `app` folder:
+ ```bash
+   cd contracts
+   ```
+4. Set up environment variables:
+   - Create a `.env` file using `env.template` as an example:
+     ```bash
+     cp env.template .env
+     ```
+5. Navigate to the `src` folder and find the `zkVote.sol` smart contract. 
+This contains the Solidity code for your voting Smart Contract. 
+
+6. Visit [Remix Ethereum IDE](https://remix.ethereum.org/) and ensure your wallet is connected to the Sepolia Testnet.
+
+7. Copy `zkVote.sol` code and paste it into a new file in Remix.
+8. Set Constructor Parameters:
+In zkVote.sol, the constructor requires:
+`_zkvContract`: The address of the zkVerify contract.
+`_vkHash`: The verification key hash for your circuit.
+These parameters are stored in your `.env` file in your project folder:
+
+9. Deploy the Contract to sepolia and copy the deployed contract address. Make sure the Ethereum address used to deploy the contract is the one you’re using for the app (`ETH_SECRET_KEY` should be the private key for that address).
+10. Paste the contract address into the `.env.template` file in your app folder as `ETH_APP_CONTRACT_ADDRESS` 
+
+11. Move to the `app` folder:
    ```bash
-   cd app
+   cd ../../app
+
    ```
 
-4. Set up environment variables:
+12. Set up environment variables:
    - Create a `.env` file using `env.template` as an example:
      ```bash
      cp env.template .env
@@ -39,25 +64,27 @@ ZeroKnowledgeVoting is a demo application showcasing a zero-knowledge voting sys
        - `ZKV_SEED_PHRASE`: The seed phrase of a wallet with sufficient **ACME tokens**.
        - `ETH_SECRET_KEY`: The secret key of an Ethereum wallet with sufficient **Sepolia ETH**.
 
-5. Install dependencies:
+13. Install dependencies:
    ```bash
    npm install
    ```
 
-6. Initialize the voting poll:
+14. Initialize the voting poll:
    ```bash
    npm run init-poll
    ```
    - This command registers voters from `voterRegistry.json` and generates the `voterMapping.json` file. You can vote using one of the account addresses listed in `voterRegistry.json`.
 
-7. Start the application:
+15. Start the application:
    ```bash
    npm start
    ```
 
-8. Open the application in your browser:
+16. Open the application in your browser:
    - To cast a vote, go to: [http://localhost:3000](http://localhost:3000)
    - To view voting results, go to: [http://localhost:3001](http://localhost:3001)
+
+This process submits a transaction to the App Contract, including the necessary attestation details obtained from ZKVerify (such as the attestation ID and Merkle path). Upon successful submission and validation, the App Contract confirms and acknowledges that your vote has been casted.
 
 ## Usage
 - **Voting:** Enter your account address (from `voterRegistry.json`) and choose a candidate to cast your vote.
