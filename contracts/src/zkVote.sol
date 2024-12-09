@@ -1,4 +1,5 @@
-pragma solidity ^0.8.13;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.18;
 
 contract zkVote {
     /// The hash of the identifier of the proving system used (groth16 in this case)
@@ -32,7 +33,7 @@ contract zkVote {
     // This function allows voters to cast a vote and ensure the vote is valid, unique and anonymous
     function proveVoteWasCast(
         uint256 attestationId,
-        uint256 root,  // Merkle root
+        uint256 root, // Merkle root
         uint256 nullifier,
         bytes32[] calldata merklePath,
         uint256 leafCount,
@@ -44,6 +45,7 @@ contract zkVote {
                 attestationId,
                 root,
                 nullifier,
+                voteCommitment,
                 merklePath,
                 leafCount,
                 index
@@ -70,16 +72,15 @@ contract zkVote {
         uint256 attestationId,
         uint256 root,
         uint256 nullifier,
+        uint256 voteCommitment,
         bytes32[] calldata merklePath,
         uint256 leafCount,
         uint256 index
     ) internal view returns (bool) {
-        uint256 rootLittleEndian = _changeEndianess(root);
-        uint256 nullifierLittleEndian = _changeEndianess(nullifier);
-
         bytes memory encodedInput = abi.encodePacked(
-            rootLittleEndian,
-            nullifierLittleEndian
+            _changeEndianess(root),
+            _changeEndianess(nullifier),
+            _changeEndianess(voteCommitment)
         );
         bytes32 leaf = keccak256(
             abi.encodePacked(PROVING_SYSTEM_ID, vkHash, keccak256(encodedInput))

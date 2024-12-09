@@ -1,14 +1,24 @@
 {
     "voters": [
-        "0x3c3f82a7d1e6b45c7e92f0ad1913fe267b2f82f1",
-        "0x518e5f64ba220c479f3d24b8abc15ededd5a48c0",
-        "0x041d91762356bf8cfd9ea2bdd4a79539958348fa",
-        "0x87f2da19eb66a4c41301d2457c50bec462e5ae74",
-        "0x1edb34718554ef91b39006d3c0950f5fbf2c61b2",
-        "0x2a12cfb3ed09af7b3ef31b9a940049cc58b0a1ea",
-        "0x08f0ac993d7eae22f560e49c6a65be554e6d5d88",
-        "0x48c62e63942110ebf8f68f3937dcf65ae4ff739f",
-        "0x21e4420e48f9078dc92c306caf637cf321b722a0",
-        "0x3e9d24712e6b6c5d02e7436abc22532fce5853bc"
+        "0x4b6f92a7e3a8b45c7e93f0ad1914fe268c2f92f1",
+        "0x62ae6f65cb230c579f4d35b9cbd25fedfe5b58c0",
+        "0x051d92873467cf9dfe9fb3ced5b8a6439a6948fa",
+        "0x98f3eb2aed77b5d52412d3568d61ced573f6af85",
+        "0x2fdc45829665ff92c4a107e4d1a60f6fcf3d72c2",
+        "0x3b23dfc4fe19bf8c4ef42cabc5015add69c1b2eb",
+        "0x19f1bdab4e8fbf33f671f5adc176cf665f7d6e99",
+        "0x59d73f74a53221fbd9f78f4a48dcf76bf5fe83a0",
+        "0x32f5531f59fa08adf03d417db0748cf432d833b0",
+        "0x4fbe35823f7d7d6e13f8547cbd33643fdf5964cd",
+        "0x5c6f93b8e4a9c56d8fa3f1bd2a25ae379d3f92f2",
+        "0x73bf7f76dc241d68a04e46cadcd36feeef6c69d1",
+        "0x061e93894578dfade0afb4dee6c9b854ab7b58fb",
+        "0x29f4ec3bfe88c6e63523e4578e72df5674f7cf96",
+        "0x3fec5693a7751193d5b118e5e2b71f71df4e83c3",
+        "0x4c34efc5ff2acd9d5ff53dbcd7126bee7ad2c3fc",
+        "0x2af2ced4bf91cf44f782f6bec287df776a8e7faa",
+        "0x6af84f85b64332fccaf89f5b59eda87cf7af94a1",
+        "0x433664226afa19bdf14e528eb1859d1543f944ce",
+        "0x5fdf36834f8e8e7f24a9658dbd447542f26075de"    
     ]
 }

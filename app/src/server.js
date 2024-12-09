@@ -1,3 +1,5 @@
+// Modified server.js
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const { generateProof } = require("./generateProof.js");
@@ -40,7 +42,7 @@ if (!fs.existsSync(votingResultsPath)) {
             "Donald Trump": 0,
             "Kamala Harris": 0
         },
-        votingID: "initialVotingID", // Consider generating a unique ID using a library like 'uuid'
+        votingID: "initialVotingID",
         spentTickets: {}
     };
     fs.writeFileSync(votingResultsPath, JSON.stringify(initialResults, null, 2), "utf8");
@@ -68,16 +70,14 @@ votingApp.get("/", (req, res) => {
             <div id="message"></div>
             <script>
                 document.getElementById("voteForm").onsubmit = async function(event) {
-                    event.preventDefault(); // Prevent form from reloading the page
+                    event.preventDefault();
                     const address = document.getElementById("address").value;
                     const vote = document.getElementById("vote").value;
                     const messageDiv = document.getElementById("message");
                     
-                    // Display loading message
                     messageDiv.innerHTML = "<h2>Please wait while your vote is being verified...</h2>";
                     
                     try {
-                        // Send vote data to the server
                         const response = await fetch("/vote", {
                             method: "POST",
                             headers: {
@@ -87,7 +87,7 @@ votingApp.get("/", (req, res) => {
                         });
 
                         const result = await response.text();
-                        messageDiv.innerHTML = result; // Display server response
+                        messageDiv.innerHTML = result;
                     } catch (error) {
                         messageDiv.innerHTML = "<h2>Error occurred while processing your vote.</h2>";
                     }
@@ -103,7 +103,6 @@ votingApp.post("/vote", async (req, res) => {
     const addr = req.body.address;
     const vote = req.body.vote;
 
-    // Input Validation
     if (!addr || !vote) {
         return res.send(`
             <h1>Error: Address and vote are required.</h1>
@@ -114,48 +113,32 @@ votingApp.post("/vote", async (req, res) => {
     }
 
     try {
-        // Validate Vote Choice
         if (!(vote in candidateMap)) {
             throw new Error("Invalid vote choice.");
         }
 
-        // Convert Candidate Name to Numerical Vote
-        const numericalVote = candidateMap[vote]; // 0 or 1
-
-        // Run the Voting Process with Numerical Vote
+        const numericalVote = candidateMap[vote];
         const { proof, publicSignals } = await generateProof(addr, numericalVote);
 
-        const ticket = {
-            proof: proof,
-            publicSignals: publicSignals,
-        };
-
-        // Save the Ticket Locally (Optional)
+        const ticket = { proof, publicSignals };
         await download(ticket, "ticket");
 
-        // Read Voting Results
         const resultData = fs.readFileSync(votingResultsPath, "utf8");
         const result = JSON.parse(resultData);
 
         const votingID = publicSignals[0];
         const nullifier = publicSignals[1];
 
-        // Verify the Voting ID Matches
         if (result.votingID !== votingID) {
             throw new Error("Mismatched votingID. Voting session integrity compromised.");
         }
 
-        // Check if the Ticket (Nullifier) is Already Spent
-        if (result["spentTickets"][nullifier] === 1) {
-            throw new Error("Ticket already spent. Vote not recorded.");
-        }
-
-        // Verify the Proof
         const isValid = await verify(proof, publicSignals);
+
         if (!isValid) {
             throw new Error("Proof verification failed. Vote not recorded.");
         }
-
+        
         // Update the Vote Count for the Selected Candidate
         if (vote === "Donald Trump" || vote === "Kamala Harris") {
             result["votes"][candidateMap[vote]] += 1;            
@@ -163,13 +146,9 @@ votingApp.post("/vote", async (req, res) => {
             throw new Error("Invalid vote choice.");
         }
 
-        // Mark the Ticket as Spent
         result["spentTickets"][nullifier] = 1;
-
-        // Save the Updated Voting Results
         fs.writeFileSync(votingResultsPath, JSON.stringify(result, null, 2), "utf8");
 
-        // Send Success Response to the Client
         res.send(`
             <h1>Vote casted successfully!</h1>
             <form action="/" method="GET">
@@ -177,9 +156,14 @@ votingApp.post("/vote", async (req, res) => {
             </form>
         `);
     } catch (error) {
-        // Send Error Response to the Client
+        let errorMessage = error.message;
+
+        if (errorMessage.includes("Nullifier already used")) {
+            errorMessage = "Ticket already spent. Vote not recorded.";
+        }
+
         res.send(`
-            <h1>Error: ${error.message}</h1>
+            <h1>Error: ${errorMessage}</h1>
             <form action="/" method="GET">
                 <button type="submit">Return to Voting Page</button>
             </form>
@@ -195,13 +179,11 @@ votingApp.listen(VOTING_PORT, () => {
 // Serve the Voting Results on a Different Port
 resultsApp.get("/", (req, res) => {
     try {
-        // Read Voting Results
         const resultData = fs.readFileSync(votingResultsPath, "utf8");
         const result = JSON.parse(resultData);
 
         const votes = result.votes;
 
-        // Send the Voting Results Page
         res.send(`
             <html>
             <head>
@@ -218,7 +200,6 @@ resultsApp.get("/", (req, res) => {
             </html>
         `);
     } catch (error) {
-        // Send Error Response if Reading Results Fails
         res.send(`
             <h1>Error reading voting results.</h1>
             <p>${error.message}</p>
@@ -226,7 +207,7 @@ resultsApp.get("/", (req, res) => {
     }
 });
 
-// Start the Results Server on a Different Port
+// Start the Results Server
 resultsApp.listen(RESULTS_PORT, () => {
     console.log(`Results server is running on http://localhost:${RESULTS_PORT}`);
 });
