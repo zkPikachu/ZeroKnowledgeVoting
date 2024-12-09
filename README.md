@@ -37,12 +37,12 @@ This contains the Solidity code for your voting Smart Contract.
 
 7. Copy `zkVote.sol` code and paste it into a new file in Remix.
 8. Set Constructor Parameters:
-In zkVote.sol, the constructor requires:
-`_zkvContract`: The address of the zkVerify contract.
-`_vkHash`: The verification key hash for your circuit.
-These parameters are stored in your `.env` file in your project folder:
+-   In `zkVote.sol`, the constructor requires:
+    * `_zkvContract`: The address of the zkVerify contract.
+    * `_vkHash`: The verification key hash for your circuit.
+- These parameters are stored in your `.env` file in your project folder `contracts`.
 
-9. Deploy the Contract to sepolia and copy the deployed contract address. Make sure the Ethereum address used to deploy the contract is the one you’re using for the app (`ETH_SECRET_KEY` should be the private key for that address).
+9. Deploy the Contract to Sepolia and copy the deployed contract address. Ensure the Ethereum address used to deploy the contract is the one you’re using for the app (`ETH_SECRET_KEY` should be the private key for that address).
 10. Paste the contract address into the `.env.template` file in your app folder as `ETH_APP_CONTRACT_ADDRESS` 
 
 11. Move to the `app` folder:
